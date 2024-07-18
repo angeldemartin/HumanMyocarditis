@@ -1,0 +1,239 @@
+---
+title: "HumanMyocarditis"
+author: "A.DeMartin"
+date: "2024-07-18"
+output: 
+  html_document:
+    keep_md: true
+    toc: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+options(width = 100)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, dev = c("png", "pdf"))
+seed <- 1234
+```
+
+## load packages
+```{r load packages, warning=FALSE, include=FALSE}
+library(ExploreSCdataSeurat3)
+library(runSeurat3)
+library(Seurat)
+library(ggpubr)
+library(pheatmap)
+library(SingleCellExperiment)
+library(dplyr)
+library(tidyverse)
+library(viridis)
+library(muscat)
+library(circlize)
+library(destiny)
+library(scater)
+library(metap)
+library(multtest)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(msigdbr)
+library(enrichplot)
+library(DOSE)
+library(grid)
+library(gridExtra)
+library(ggupset)
+library(VennDiagram)
+library(NCmisc)
+library(RColorBrewer)
+```
+
+############################## start pre-processing ##############################
+
+## load files and merge
+```{r load files, eval=FALSE, include=TRUE}
+### load files healthy Ddonors and merge
+basedir <- "/Users/immbio/Desktop/Project/Angelina/HumanMyocarditis/data/healthyDonors/"
+fileNamList <- list.files(path = basedir)
+
+for(i in 1:length(fileNamList)){
+  seuratS <- readRDS(paste0(basedir, fileNamList[i]))
+  if(exists("seuratM")){
+    seuratM <- merge(x = seuratM, y = seuratS)
+  }else{
+    seuratM <- seuratS
+  }
+}
+
+remove(seuratS)
+table(seuratM$dataset)
+table(seuratM$orig.ident)
+
+### load files data June24 and merge
+basedir <- "/Users/immbio/Desktop/Project/Angelina/HumanMyocarditis/data/dataJune24/"
+fileNamList <- list.files(path = basedir)
+
+for(i in 1:length(fileNamList)){
+  seuratS <- readRDS(paste0(basedir, fileNamList[i]))
+  if(exists("seuratM")){
+    seuratM <- merge(x = seuratM, y = seuratS)
+  }else{
+    seuratM <- seuratS
+  }
+}
+
+remove(seuratS)
+table(seuratM$dataset)
+table(seuratM$orig.ident)
+```
+
+## add metadata
+```{r add metadata, eval=FALSE, include=TRUE}
+### add any type of metadata
+### patient
+HH_1 <- c("o28576_1_08-8_20220525_Hu_nucseq_Graz_8_HH_GEM")
+HH_2 <- c("o28576_1_09-9_20220525_Hu_nucseq_Graz_9_HH_GEM")
+HH_3 <- c("o28576_1_10-10_20220525_Hu_nucseq_Graz_10_HH_GEM")
+HH_4 <- c("o28576_1_11-11_20220525_Hu_nucseq_Graz_11_HH_GEM")
+HH_5 <- c("o28576_1_12-12_20220525_Hu_nucseq_Graz_12_HH_GEM")
+HH_6 <- c("o292731_1-1_20220818_Hu_nucseq_Graz_9_HH_GEM")
+HH_7 <- c("o292731_2-2_20220818_Hu_nucseq_Graz_13_HH_GEM")
+HH_8 <- c("o294781_01-1_20220912_Hu_nucseq_Graz_21_HH_GEM")
+HH_9 <- c("o294781_02-2_20220912_Hu_nucseq_Graz_22_HH_GEM")
+HH_10 <- c("o294781_03-3_20220912_Hu_nucseq_Graz_23_HH_GEM")
+HH_11 <- c("o294781_04-4_20220912_Hu_nucseq_Graz_24_HH_GEM")
+
+pat_39 <- c("347741_6-6_20240326_Hu_nucseq_Immpath_AM39_0", "348751_1-6_20240326_Hu_nucseq_Immpath_AM39_0_rep")
+pat_18 <- c("353921_28-28_20240529_Hu_nucseq_Immpath_EMB18")
+pat_24 <- c("353921_29-29_20240529_Hu_nucseq_Immpath_EMB24")
+pat_25 <- c("353921_30-30_20240529_Hu_nucseq_Immpath_EMB25")
+pat_27 <- c("353921_31-31_20240529_Hu_nucseq_Immpath_EMB27")
+pat_29 <- c("353921_32-32_20240529_Hu_nucseq_Immpath_EMB29")
+pat_30 <- c("353921_33-33_20240529_Hu_nucseq_Immpath_EMB30")
+pat_35 <- c("353921_34-34_20240529_Hu_nucseq_Immpath_EMB35")
+pat_37 <- c("353921_35-35_20240529_Hu_nucseq_Immpath_EMB37")
+
+seuratM$patient <- "pat_nr"
+seuratM$patient[which(seuratM$dataset %in% pat_39)] <- "Immpath39"
+seuratM$patient[which(seuratM$dataset %in% pat_18)] <- "Immpath18"
+seuratM$patient[which(seuratM$dataset %in% pat_24)] <- "Immpath24"
+seuratM$patient[which(seuratM$dataset %in% pat_25)] <- "Immpath25"
+seuratM$patient[which(seuratM$dataset %in% pat_27)] <- "Immpath27"
+seuratM$patient[which(seuratM$dataset %in% pat_29)] <- "Immpath29"
+seuratM$patient[which(seuratM$dataset %in% pat_30)] <- "Immpath30"
+seuratM$patient[which(seuratM$dataset %in% pat_35)] <- "Immpath35"
+seuratM$patient[which(seuratM$dataset %in% pat_37)] <- "Immpath37"
+
+seuratM$patient[which(seuratM$dataset %in% HH_1)] <- "HH1"
+seuratM$patient[which(seuratM$dataset %in% HH_2)] <- "HH2"
+seuratM$patient[which(seuratM$dataset %in% HH_3)] <- "HH3"
+seuratM$patient[which(seuratM$dataset %in% HH_4)] <- "HH4"
+seuratM$patient[which(seuratM$dataset %in% HH_5)] <- "HH5"
+seuratM$patient[which(seuratM$dataset %in% HH_6)] <- "HH6"
+seuratM$patient[which(seuratM$dataset %in% HH_7)] <- "HH7"
+seuratM$patient[which(seuratM$dataset %in% HH_8)] <- "HH8"
+seuratM$patient[which(seuratM$dataset %in% HH_9)] <- "HH9"
+seuratM$patient[which(seuratM$dataset %in% HH_10)] <- "HH10"
+seuratM$patient[which(seuratM$dataset %in% HH_11)] <- "HH2"
+
+table(seuratM$patient)
+table(seuratM$orig.ident)
+
+#### cond
+#healthy
+healthy <- c("o28576_1_08-8_20220525_Hu_nucseq_Graz_8_HH_GEM","o28576_1_10-10_20220525_Hu_nucseq_Graz_10_HH_GEM","o28576_1_11-11_20220525_Hu_nucseq_Graz_11_HH_GEM", "o28576_1_12-12_20220525_Hu_nucseq_Graz_12_HH_GEM","o292731_1-1_20220818_Hu_nucseq_Graz_9_HH_GEM","o292731_2-2_20220818_Hu_nucseq_Graz_13_HH_GEM", "o294781_01-1_20220912_Hu_nucseq_Graz_21_HH_GEM", "o294781_02-2_20220912_Hu_nucseq_Graz_22_HH_GEM", "o294781_03-3_20220912_Hu_nucseq_Graz_23_HH_GEM", "o294781_04-4_20220912_Hu_nucseq_Graz_24_HH_GEM", "o28576_1_09-9_20220525_Hu_nucseq_Graz_9_HH_GEM")
+#myocarditis
+myocarditis <- c("347741_6-6_20240326_Hu_nucseq_Immpath_AM39_0", "348751_1-6_20240326_Hu_nucseq_Immpath_AM39_0_rep","353921_28-28_20240529_Hu_nucseq_Immpath_EMB18","353921_29-29_20240529_Hu_nucseq_Immpath_EMB24","353921_30-30_20240529_Hu_nucseq_Immpath_EMB25","353921_31-31_20240529_Hu_nucseq_Immpath_EMB27","353921_32-32_20240529_Hu_nucseq_Immpath_EMB29","353921_33-33_20240529_Hu_nucseq_Immpath_EMB30","353921_34-34_20240529_Hu_nucseq_Immpath_EMB35","353921_35-35_20240529_Hu_nucseq_Immpath_EMB37")
+
+seuratM$cond <- "diseaseCond"
+seuratM$cond[which(seuratM$dataset %in% healthy)] <- "healthy"
+seuratM$cond[which(seuratM$dataset %in% myocarditis)] <- "myocarditis"
+table(seuratM$cond)
+```
+
+## rerun seurat
+```{r rerun seurat, eval=FALSE, include=TRUE}
+#rerun seurat
+seuratM <- NormalizeData (object = seuratM)
+seuratM <- FindVariableFeatures(object = seuratM)
+seuratM <- ScaleData(object = seuratM, verbose = TRUE)
+seuratM <- RunPCA(object=seuratM, npcs = 30, verbose = FALSE)
+seuratM <- RunTSNE(object=seuratM, reduction="pca", dims = 1:20, check_duplicates = FALSE)
+seuratM <- RunUMAP(object=seuratM, reduction="pca", dims = 1:20)
+seuratM <- FindNeighbors(object = seuratM, reduction = "pca", dims= 1:20)
+
+res <- c(0.25, 0.6, 0.8, 0.4)
+for (i in 1:length(res)) {
+  seuratM <- FindClusters(object = seuratM, resolution = res[i], random.seed = 1234)
+}
+```
+
+```{r save merged seurat object, eval=FALSE, include=TRUE}
+### save seurat object
+saveRDS(seuratM, file="/Users/immbio/Desktop/Project/Angelina/HumanMyocarditis/data/ImmpathMyocarditis_allmerged_seurat.rds")
+```
+
+############################## end pre-processing ##############################
+
+## load file
+```{r load merged file}
+##load merged file 
+fileNam <- "/Users/immbio/Desktop/Project/Angelina/HumanMyocarditis/data/ImmpathMyocarditis_allmerged_seurat.rds"
+seuratM <- readRDS(fileNam)
+table(seuratM$dataset)
+table(seuratM$RNA_snn_res.0.25)
+table(seuratM$orig.ident)
+```
+
+##set color vectors 
+```{r set color vector}
+colpat <- c("#9E0142", "#D53E4F", "#F46D43", "#FDAE61", "#FEE08B", "#E6F598", "#ABDDA4", "#66C2A5", "#3288BD", "#5E4FA2" ,"#BEAED4" , "#FDC086", "#727077","#779d8d","#dfc27d","#f4a582","#B45B5C","#355C7D","#202547")
+names(colpat) <- unique(seuratM$patient)
+
+colcond <- c("#355C7D", "#B45B5C")
+names(colcond) <- unique(seuratM$cond)
+```
+
+## QC merged 
+```{r QC merged}
+### QC merged
+# Extract meta.data from the Seurat object
+meta.data <- seuratM@meta.data
+# Create the density plot
+ptotalpat <- ggplot(data = meta.data, aes(x = total, color = patient, fill = patient)) +
+  geom_density(alpha = 0.2) +
+  scale_fill_manual(values = colpat) +
+  scale_color_manual(values = colpat) +
+  theme_classic() +
+  scale_x_log10() +
+  ylab("density") +
+  geom_vline(xintercept = 100)
+
+pdetectedpat <- ggplot(data = meta.data, aes(x = detected, color = patient, fill = patient)) +
+  geom_density(alpha = 0.2) +
+  scale_fill_manual(values = colpat) +
+  scale_color_manual(values = colpat) +
+  theme_classic() +
+  scale_x_log10() +
+  ylab("density") +
+  geom_vline(xintercept = 100)
+
+# Return the plots as a list
+list(ptotalpat, pdetectedpat)
+```
+
+## plot umaps
+```{r umap}
+Idents(seuratM) <- seuratM$RNA_snn_res.0.25
+DimPlot(seuratM, reduction = "umap", pt.size = 0.1) 
+
+Idents(seuratM) <- seuratM$patient
+DimPlot(seuratM, reduction = "umap", pt.size = 0.1, cols = colpat) 
+
+Idents(seuratM) <- seuratM$cond
+DimPlot(seuratM, reduction = "umap", pt.size = 0.1, cols = colcond) 
+```
+
+## session info
+```{r date and session info}
+date()
+sessionInfo()
+```
