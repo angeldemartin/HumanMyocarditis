@@ -50,7 +50,7 @@ library(RColorBrewer)
 
 ## load files and merge
 ```{r load files, eval=FALSE, include=TRUE}
-### load files healthy Ddonors and merge
+### load files healthy donors and merge
 basedir <- "/Users/immbio/Desktop/Project/Angelina/HumanMyocarditis/data/healthyDonors/"
 fileNamList <- list.files(path = basedir)
 
@@ -67,8 +67,25 @@ remove(seuratS)
 table(seuratM$dataset)
 table(seuratM$orig.ident)
 
-### load files data June24 and merge
+### load files dataJune24 and merge
 basedir <- "/Users/immbio/Desktop/Project/Angelina/HumanMyocarditis/data/dataJune24/"
+fileNamList <- list.files(path = basedir)
+
+for(i in 1:length(fileNamList)){
+  seuratS <- readRDS(paste0(basedir, fileNamList[i]))
+  if(exists("seuratM")){
+    seuratM <- merge(x = seuratM, y = seuratS)
+  }else{
+    seuratM <- seuratS
+  }
+}
+
+remove(seuratS)
+table(seuratM$dataset)
+table(seuratM$orig.ident)
+
+### load files dataNCR and merge
+basedir <- "/Users/immbio/Desktop/Project/Angelina/HumanMyocarditis/data/dataNCR/"
 fileNamList <- list.files(path = basedir)
 
 for(i in 1:length(fileNamList)){
@@ -111,6 +128,15 @@ pat_30 <- c("353921_33-33_20240529_Hu_nucseq_Immpath_EMB30")
 pat_35 <- c("353921_34-34_20240529_Hu_nucseq_Immpath_EMB35")
 pat_37 <- c("353921_35-35_20240529_Hu_nucseq_Immpath_EMB37")
 
+pat_NCR30 <- c("o27533_1_11-11_20220203_Hu_nucseq_EMB30_GEM")
+pat_NCR31 <- c("o27533_1_12-12_20220203_Hu_nucseq_EMB31_GEM")
+pat_NCR32 <- c("o27936_1_7-7_20220309_Hu_nucseq_EMB32_GEM")
+pat_NCR33 <- c("o292731_3-3_20220818_Hu_nucseq_SG_33_EMB_GEM")
+pat_NCR34 <- c("o292731_4-4_20220818_Hu_nucseq_SG_34_EMB_GEM")
+pat_NCRGraz1 <- c("o28576_1_01-1_20220525_Hu_nucseq_Graz_1_EMB_GEM")
+pat_NCRGraz2 <- c("o28576_1_02-2_20220525_Hu_nucseq_Graz_2_EMB_GEM")
+pat_NCRGraz15 <- c("o294781_06-6_20220912_Hu_nucseq_Graz_15_EMB_GEM")
+
 seuratM$patient <- "pat_nr"
 seuratM$patient[which(seuratM$dataset %in% pat_39)] <- "Immpath39"
 seuratM$patient[which(seuratM$dataset %in% pat_18)] <- "Immpath18"
@@ -121,6 +147,15 @@ seuratM$patient[which(seuratM$dataset %in% pat_29)] <- "Immpath29"
 seuratM$patient[which(seuratM$dataset %in% pat_30)] <- "Immpath30"
 seuratM$patient[which(seuratM$dataset %in% pat_35)] <- "Immpath35"
 seuratM$patient[which(seuratM$dataset %in% pat_37)] <- "Immpath37"
+
+seuratM$patient[which(seuratM$dataset %in% pat_NCR30)] <- "NCR30"
+seuratM$patient[which(seuratM$dataset %in% pat_NCR31)] <- "NCR31"
+seuratM$patient[which(seuratM$dataset %in% pat_NCR32)] <- "NCR32"
+seuratM$patient[which(seuratM$dataset %in% pat_NCR33)] <- "NCR33"
+seuratM$patient[which(seuratM$dataset %in% pat_NCR34)] <- "NCR34"
+seuratM$patient[which(seuratM$dataset %in% pat_NCRGraz1)] <- "NCRGraz1"
+seuratM$patient[which(seuratM$dataset %in% pat_NCRGraz2)] <- "NCRGraz2"
+seuratM$patient[which(seuratM$dataset %in% pat_NCRGraz15)] <- "NCRGraz15"
 
 seuratM$patient[which(seuratM$dataset %in% HH_1)] <- "HH1"
 seuratM$patient[which(seuratM$dataset %in% HH_2)] <- "HH2"
@@ -140,12 +175,9 @@ table(seuratM$orig.ident)
 #### cond
 #healthy
 healthy <- c("o28576_1_08-8_20220525_Hu_nucseq_Graz_8_HH_GEM","o28576_1_10-10_20220525_Hu_nucseq_Graz_10_HH_GEM","o28576_1_11-11_20220525_Hu_nucseq_Graz_11_HH_GEM", "o28576_1_12-12_20220525_Hu_nucseq_Graz_12_HH_GEM","o292731_1-1_20220818_Hu_nucseq_Graz_9_HH_GEM","o292731_2-2_20220818_Hu_nucseq_Graz_13_HH_GEM", "o294781_01-1_20220912_Hu_nucseq_Graz_21_HH_GEM", "o294781_02-2_20220912_Hu_nucseq_Graz_22_HH_GEM", "o294781_03-3_20220912_Hu_nucseq_Graz_23_HH_GEM", "o294781_04-4_20220912_Hu_nucseq_Graz_24_HH_GEM", "o28576_1_09-9_20220525_Hu_nucseq_Graz_9_HH_GEM")
-#myocarditis
-myocarditis <- c("347741_6-6_20240326_Hu_nucseq_Immpath_AM39_0", "348751_1-6_20240326_Hu_nucseq_Immpath_AM39_0_rep","353921_28-28_20240529_Hu_nucseq_Immpath_EMB18","353921_29-29_20240529_Hu_nucseq_Immpath_EMB24","353921_30-30_20240529_Hu_nucseq_Immpath_EMB25","353921_31-31_20240529_Hu_nucseq_Immpath_EMB27","353921_32-32_20240529_Hu_nucseq_Immpath_EMB29","353921_33-33_20240529_Hu_nucseq_Immpath_EMB30","353921_34-34_20240529_Hu_nucseq_Immpath_EMB35","353921_35-35_20240529_Hu_nucseq_Immpath_EMB37")
 
-seuratM$cond <- "diseaseCond"
+seuratM$cond <- "myocarditis"
 seuratM$cond[which(seuratM$dataset %in% healthy)] <- "healthy"
-seuratM$cond[which(seuratM$dataset %in% myocarditis)] <- "myocarditis"
 table(seuratM$cond)
 ```
 
@@ -185,11 +217,28 @@ table(seuratM$orig.ident)
 
 ##set color vectors 
 ```{r set color vector}
-colpat <- c("#9E0142", "#D53E4F", "#F46D43", "#FDAE61", "#FEE08B", "#E6F598", "#ABDDA4", "#66C2A5", "#3288BD", "#5E4FA2" ,"#BEAED4" , "#FDC086", "#727077","#779d8d","#dfc27d","#f4a582","#B45B5C","#355C7D","#202547")
-names(colpat) <- unique(seuratM$patient)
-
 colcond <- c("#355C7D", "#B45B5C")
 names(colcond) <- unique(seuratM$cond)
+
+col0.25 <- c("#67001f", "#b2182b", "#d6604d", "#f4a582", "#dfc27d","#003c30","#01665e","#35978f","#c7eae5","#4d4d4d","#1a1a1a","#8c510a", "#355C7D","#779d8d","#3288BD", "#5E4FA2" ,"#BEAED4") 
+names(col0.25) <- c("0" ,"1", "2", "3", "4", "5", "6", "7", "8", "9", "10","11", "12", "13", "14", "15", "16")
+```
+
+## plot cell numbers
+```{r cellnumber circle}
+cell_count <- data.frame(table(seuratM$patient))
+colnames(cell_count) <- c("patient", "Freq")
+hsize <- 1.5
+
+ggplot(cell_count, aes(x = hsize, y = Freq, fill = patient)) +
+  #scale_fill_manual(values = colpat2) +
+  geom_col(color = "white") +
+  coord_polar(theta = "y") +
+  xlim(c(0.2, hsize + 0.5)) +
+  theme_void() +
+  ggtitle("cell number") +
+  theme(plot.title = element_text(hjust = 0.5, size = 15)) +
+  geom_text(aes(label = Freq), position = position_stack(vjust = 0.5))
 ```
 
 ## QC merged 
@@ -200,8 +249,8 @@ meta.data <- seuratM@meta.data
 # Create the density plot
 ptotalpat <- ggplot(data = meta.data, aes(x = total, color = patient, fill = patient)) +
   geom_density(alpha = 0.2) +
-  scale_fill_manual(values = colpat) +
-  scale_color_manual(values = colpat) +
+  #scale_fill_manual(values = colpat) +
+  #scale_color_manual(values = colpat) +
   theme_classic() +
   scale_x_log10() +
   ylab("density") +
@@ -209,8 +258,8 @@ ptotalpat <- ggplot(data = meta.data, aes(x = total, color = patient, fill = pat
 
 pdetectedpat <- ggplot(data = meta.data, aes(x = detected, color = patient, fill = patient)) +
   geom_density(alpha = 0.2) +
-  scale_fill_manual(values = colpat) +
-  scale_color_manual(values = colpat) +
+  #scale_fill_manual(values = colpat) +
+  #scale_color_manual(values = colpat) +
   theme_classic() +
   scale_x_log10() +
   ylab("density") +
@@ -223,13 +272,79 @@ list(ptotalpat, pdetectedpat)
 ## plot umaps
 ```{r umap}
 Idents(seuratM) <- seuratM$RNA_snn_res.0.25
-DimPlot(seuratM, reduction = "umap", pt.size = 0.1) 
+DimPlot(seuratM, reduction = "umap", pt.size = 0.1, cols = col0.25, label = TRUE) 
 
 Idents(seuratM) <- seuratM$patient
-DimPlot(seuratM, reduction = "umap", pt.size = 0.1, cols = colpat) 
+DimPlot(seuratM, reduction = "umap", pt.size = 0.1) 
+DimPlot(seuratM, reduction = "umap", pt.size = 0.1) + theme(legend.position = "null")
 
 Idents(seuratM) <- seuratM$cond
 DimPlot(seuratM, reduction = "umap", pt.size = 0.1, cols = colcond) 
+```
+## plot features
+```{r feature plot}
+FeaturePlot(seuratM, features = "ENSG00000155657.TTN", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+FeaturePlot(seuratM, features = "ENSG00000134571.MYBPC3", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+
+FeaturePlot(seuratM, features = "ENSG00000261371.PECAM1", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+FeaturePlot(seuratM, features = "ENSG00000172889.EGFL7", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+FeaturePlot(seuratM, features = "ENSG00000110799.VWF", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+
+FeaturePlot(seuratM, features = "ENSG00000137077.CCL21", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+
+FeaturePlot(seuratM, features = "ENSG00000133392.MYH11", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+FeaturePlot(seuratM, features = "ENSG00000107796.ACTA2", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+
+FeaturePlot(seuratM, features = "ENSG00000134853.PDGFRA", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+FeaturePlot(seuratM, features = "ENSG00000081052.COL4A4", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+
+FeaturePlot(seuratM, features = "ENSG00000081237.PTPRC", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+
+FeaturePlot(seuratM, features = "ENSG00000168685.IL7R", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+FeaturePlot(seuratM, features = "ENSG00000116824.CD2", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+
+FeaturePlot(seuratM, features = "ENSG00000177575.CD163", pt.size = 1, cols = c("lightgrey", "#BE3144"))
+```
+## plot umaps subsets
+```{r umap subsets}
+seurathealthy <- subset(seuratM, cond == "healthy")
+seuratmyocarditis <- subset(seuratM, cond == "myocarditis")
+
+Idents(seurathealthy) <- seurathealthy$cond
+DimPlot(seurathealthy, reduction = "umap", pt.size = 0.1, cols = colcond) 
+
+Idents(seuratmyocarditis) <- seuratmyocarditis$cond
+DimPlot(seuratmyocarditis, reduction = "umap", pt.size = 0.1, cols = colcond) 
+```
+## rel abundance
+```{r rel abundance, fig.height=8, fig.width=10}
+###dataset
+datList <- NULL
+for(con in unique(seuratM$patient)){
+  seuratSub <- subset(seuratM, patient==con)
+  print(dim(seuratSub))
+  dat_con <- as.data.frame(table(seuratSub$RNA_snn_res.0.25)) %>%
+  mutate(percent=Freq/ncol(seuratSub)) %>% mutate(patient=con)
+  datList[[con]] <- dat_con
+}
+dat_all <- do.call("rbind", datList)
+
+## plot abundance
+ggbarplot(dat_all, x= "patient", y= "percent", fill = "Var1", palette = col0.25, legend = "right", legend.titel = "cluster", ylab = "frequency")  + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+###cond
+datList <- NULL
+for(con in unique(seuratM$cond)){
+  seuratSub <- subset(seuratM, cond==con)
+  print(dim(seuratSub))
+  dat_con <- as.data.frame(table(seuratSub$RNA_snn_res.0.25)) %>%
+  mutate(percent=Freq/ncol(seuratSub)) %>% mutate(cond=con)
+  datList[[con]] <- dat_con
+}
+dat_all <- do.call("rbind", datList)
+
+## plot abundance
+ggbarplot(dat_all, x= "cond", y= "percent", fill = "Var1", palette = col0.25, legend = "right", legend.titel = "cluster", ylab = "frequency")  + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
 ## session info
